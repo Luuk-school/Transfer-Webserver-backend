@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        docker { image 'node:24' }
-    }
+    agent any
 
     environment {
         REPO_NAME = "main-backend"
@@ -18,22 +16,7 @@ pipeline {
             }
         }
 
-        stage('Install') {
-            steps {
-                sh 'npm ci'
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                sh """
-                docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
-                docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
-                """
-            }
-        }
-
-        stage('Push Docker Image') {
+        stage('Build & Push Docker Image') {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
@@ -41,7 +24,12 @@ pipeline {
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
                     sh """
-                    echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    # Build Docker image
+                    docker build -t ${IMAGE_NAME}:${IMAGE_TAG} .
+                    docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${IMAGE_NAME}:latest
+
+                    # Login and push
+                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
                     docker push ${IMAGE_NAME}:${IMAGE_TAG}
                     docker push ${IMAGE_NAME}:latest
                     """
@@ -55,12 +43,22 @@ pipeline {
                     sh """
                     ssh ridderleeuw@${DOCKER_VM} '
                       cd ~/deploy && \
-                      docker pull ${IMAGE_NAME}:latest && \
-                      docker compose up -d ${REPO_NAME}
+                      docker-compose pull ${REPO_NAME} && \
+                      docker-compose up -d ${REPO_NAME}
                     '
                     """
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            echo "Pipeline finished. Cleaning up unused Docker images on Jenkins agent."
+            sh "docker image prune -f || true"
+        }
+        failure {
+            echo "Pipeline failed!"
         }
     }
 }

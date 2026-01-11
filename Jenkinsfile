@@ -41,16 +41,15 @@ pipeline {
             steps {
                 sshagent([SSH_CREDENTIALS_ID]) {
                     sh """
-                    ssh ridderleeuw@${DOCKER_VM} '
-                      cd ~/deploy && \
-                      docker-compose pull ${REPO_NAME} && \
-                      docker-compose up -d ${REPO_NAME}
-                    '
+                        ssh ridderleeuw@${DOCKER_VM} '
+                            cd ~/deploy && \
+                            docker pull ${IMAGE_NAME}:latest && \
+                            docker compose up -d ${REPO_NAME}
+                        '
                     """
                 }
             }
         }
-    }
 
     post {
         always {

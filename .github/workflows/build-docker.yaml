@@ -1,4 +1,4 @@
-name: Transfer-main-backend-Docker-Build
+name: transfer-main-backend-Docker-Build
 on:
   workflow_dispatch:
   push:

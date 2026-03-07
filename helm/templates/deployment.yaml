@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: main-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: main-backend
+  template:
+    metadata:
+      labels:
+        app: main-backend
+    spec:
+      containers:
+      - name: main-backend
+        image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+        ports:
+        - containerPort: {{ .Values.service.port }}

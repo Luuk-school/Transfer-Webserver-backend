@@ -1,0 +1,6 @@
+apiVersion: v2
+name: main-backend
+description: main-backend helm chart for Transfer-Webserver-mainbackend
+type: application
+version: 0.1.0
+appVersion: "1.0"

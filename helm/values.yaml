@@ -1,5 +1,5 @@
 image:
   repository: luukschool/main-backend
-  tag: latest
+  tag: "76fe22100ab32ca05ca5e115abfc0351ee31b998"
 service:
   port: 5000
